@@ -13,21 +13,32 @@ public class JpaMain {
         tx.begin();
 
         try{
-            Member member = new Member();
-            member.setUsername("member1");
-            member.setAge(10);
-            em.persist(member);
+            for(int i=0; i<100; i++){
+                Member member = new Member();
+                member.setUsername("member" + i);
+                member.setAge(i);
+                em.persist(member);
+            }
 
-            TypedQuery<Member> query = em.createQuery("select m from Member m", Member.class);
-            Query query2 = em.createQuery("select m.username, m.age from Member m");
-            List<Member> resultList = query.getResultList();
-            Member singleResult = query.getSingleResult();
+            em.flush();
+            em.clear();
 
-            Member result = em.createQuery("select m from Member m where m.username = :username", Member.class)
-                    .setParameter("username", "member1")
-                    .getSingleResult();
+//            List<MemberDTO> result = em.createQuery("select new jpql.MemberDTO(m.username, m.age) from Member m", MemberDTO.class)
+//                    .getResultList();
+//
+//            MemberDTO memberDTO = result.get(0);
+//            System.out.println("memberDTO.getUsername() = " + memberDTO.getUsername());
+//            System.out.println("memberDTO.getUsername() = " + memberDTO.getAge());
 
-            System.out.println("result.getUsername() = " + result.getUsername());
+            List<Member> result = em.createQuery("select m from Member m order by m.age desc", Member.class)
+                    .setFirstResult(1)
+                    .setMaxResults(10)
+                    .getResultList();
+
+            System.out.println("result.size() = " + result.size());
+            for (Member member1 : result) {
+                System.out.println("member1 = " + member1);
+            }
 
             tx.commit();
         } catch (Exception e){
